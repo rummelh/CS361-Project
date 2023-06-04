@@ -2,6 +2,20 @@
 from tkinter import *
 from tkinter.ttk import *
 import tkinter as tk
+import mysql.connector
+import zmq
+import json
+
+context = zmq.Context()
+
+socket = context.socket(zmq.REQ)
+socket.connect("tcp://localhost:5555")
+
+cnx = mysql.connector.connect(user = 'cs340_rummelh', password = '3496', host = 'classmysql.engr.oregonstate.edu',
+database = 'cs340_rummelh')
+
+cursor = cnx.cursor()
+
 
 # Create object
 root = Tk()
@@ -19,9 +33,24 @@ def create_product_window():
     window.geometry("300x300")
     product_name = Label(window, text = "Product name", font = ("Times", 24))
     product_name.pack()
-    info = Label(window, text = "Inventory Level - \n Source - \n Link - \n Lead Time - \n Cost - \n Acceptable Stock "
-    "Level - ", font = ("Times", 12))
-    info.pack()
+
+    inventory_level = Label(window, text = "Inventory Level - ", font = ("Times", 12))
+    button_frame = Frame(window)  # Create a frame to hold the buttons
+    button_frame.pack()
+    button1 = Button(button_frame, text="SUBTRACT 1 FROM INVENTORY")
+    button1.grid(row=0, column=0)
+
+    button2 = Button(button_frame, text="ADD 1 TO INVENTORY")
+    button2.grid(row=0, column=1)
+    source = Label(window, text = "Source - ", font = ("Times", 12))
+    link = Label(window, text="Link - ", font = ("Times", 12))
+    lead_time = Label(window, text="Lead Time - ", font = ("Times", 12))
+    cost = Label(window, text="Cost - ", font = ("Times", 12))
+    inventory_level.pack()
+    source.pack()
+    link.pack()
+    lead_time.pack()
+    cost.pack()
     def close():
         window.destroy()
     Button(window, text = "Exit",  command = close).pack()
@@ -39,32 +68,45 @@ def create_category_window():
         window.destroy()
     Button(window, text = "Exit",  command = close).pack()
 
+def low_stock_report():
+    query = ("SELECT product_name, inventory_level FROM Products")
+
+    cursor.execute(query)
+
+    json_dict = {}
+
+    for product_name, inventory_level in cursor:
+        json_dict[product_name] = inventory_level
+
+    json_file = json.dumps(json_dict)
+
+    socket.send_json(json_file)
+
+    message = socket.recv_json()
+    json_dict = json.loads(message)
+    print(f"received reply [ {message}]")
+    boxed = tk.Label(box, text= json_dict)
+    boxed.pack()
+
+
+
 product_search = Label(root, text= "Product Search", font=("Times", 16))
 product_search.pack()
 
+
+query1 = ("SELECT product_name FROM Products")
+
+cursor.execute(query1)
+
+results = cursor.fetchall()
+
+display_names = []
+
 # Dropdown menu options
-options = [
-    "Apple",
-    "Bananas",
-    "Beef",
-    "Bread",
-    "Broccoli",
-    "Celery",
-    "Cereal",
-    "Chicken",
-    "Cupcakes",
-    "Grapes",
-    "Ice Cream",
-    "Pancake Mix",
-    "Pears",
-    "Peppers",
-    "Pork",
-    "Sour Cream",
-    "Syrup",
-    "Tortillas",
-    "Turkey",
-    "Yogurt",
-]
+options = ['']
+
+for names in results:
+    options.append(names[0])
 
 # datatype of menu text
 clicked = StringVar()
@@ -87,14 +129,20 @@ label.pack()
 category_search = Label(root, text= "Category Search", font=("Times", 16))
 category_search.pack()
 # Dropdown menu options
-options = [
-    "Fruits",
-    "Vegetables",
-    "Meat",
-    "Breakfast Foods",
-    "Dairy",
-    "Baked Goods"
-]
+query2 = ("SELECT category_name FROM Categories")
+
+cursor.execute(query2)
+
+results = cursor.fetchall()
+
+display_categories = []
+
+# Dropdown menu options
+options = ['']
+
+for names in results:
+    options.append(names[0])
+
 
 
 click = StringVar()
@@ -110,10 +158,15 @@ select_category.pack()
 
 button_click = Button(root, text="Enter Selection", command=create_category_window).pack()
 
-box = tk.LabelFrame(root, text = "Low Stock!", pady = 20)
+
+
+run_report = tk.Button(root, text = 'Run Low Inventory Report', command = low_stock_report).pack()
+
+box = tk.LabelFrame(root, text="Low Stock!", pady=20)
 box.pack()
-boxed = tk.Label(box, text="- Cupcakes \n - Ice Cream")
-boxed.pack()
+
+
+
 
 root.mainloop()
 
