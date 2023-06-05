@@ -31,6 +31,10 @@ inventory_management.pack()
 #passed to button click to pass parameters to create product window
 def get_product_info():
     product = clicked.get()
+    query = ("SELECT * FROM Products WHERE product_name = %s")
+    cursor.execute(query, (product,))
+    results = cursor.fetchall()
+    print(results)
     create_product_window(product)
 
 def get_category_info():
