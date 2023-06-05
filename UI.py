@@ -17,25 +17,35 @@ database = 'cs340_rummelh')
 cursor = cnx.cursor()
 
 
-# Create object
+
 root = Tk()
 
-# Adjust size
+
 root.geometry("600x600")
 
 inventory_management = Label(root, text= "Inventory Management", font=("Times", 24))
 inventory_management.pack()
 
 
+
+#passed to button click to pass parameters to create product window
+def get_product_info():
+    product = clicked.get()
+    create_product_window(product)
+
+def get_category_info():
+    category = click.get()
+    create_category_window(category)
+
 #Creates pop-up window for given product
-def create_product_window():
+def create_product_window(name1):
     window = tk.Toplevel(root)
     window.geometry("300x300")
-    product_name = Label(window, text = "Product name", font = ("Times", 24))
+    product_name = Label(window, text = name1, font = ("Times", 24))
     product_name.pack()
 
     inventory_level = Label(window, text = "Inventory Level - ", font = ("Times", 12))
-    button_frame = Frame(window)  # Create a frame to hold the buttons
+    button_frame = Frame(window)
     button_frame.pack()
     button1 = Button(button_frame, text="SUBTRACT 1 FROM INVENTORY")
     button1.grid(row=0, column=0)
@@ -55,10 +65,10 @@ def create_product_window():
         window.destroy()
     Button(window, text = "Exit",  command = close).pack()
 
-def create_category_window():
+def create_category_window(category1):
     window = tk.Toplevel(root)
     window.geometry("500x300")
-    product_name = Label(window, text = "Category name", font = ("Times", 24))
+    product_name = Label(window, text = category1, font = ("Times", 24))
     product_name.pack()
     info = Label(window, text = "Product              Stock              Last update date/time", font = ("Times", 12))
     info.pack()
@@ -119,7 +129,8 @@ drop = OptionMenu(root, clicked, *options)
 drop.pack()
 
 # Create button, it will change label text
-button = Button(root, text="Enter Selection", command=create_product_window).pack()
+button = Button(root, text="Enter Selection", command=get_product_info).pack()
+
 
 # Create Label
 label = Label(root, text="")
@@ -156,7 +167,7 @@ select_category = Label(root, text="")
 select_category.pack()
 
 
-button_click = Button(root, text="Enter Selection", command=create_category_window).pack()
+button_click = Button(root, text="Enter Selection", command=get_category_info).pack()
 
 
 
