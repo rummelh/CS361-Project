@@ -34,32 +34,54 @@ def get_product_info():
     query = ("SELECT * FROM Products WHERE product_name = %s")
     cursor.execute(query, (product,))
     results = cursor.fetchall()
-    print(results)
-    create_product_window(product)
+    stock = results[0][2]
+    source = results[0][3]
+    link = results[0][4]
+    lead_time = results[0][5]
+    cost = results[0][6]
+    create_product_window(product,stock,source,link,lead_time,cost)
 
 def get_category_info():
     category = click.get()
-    create_category_window(category)
+    query = ("SELECT category_ID FROM Categories WHERE category_name = %s")
+    cursor.execute(query,(category,))
+    results = cursor.fetchall()
+    results = results[0]
+    query2 = ("SELECT * FROM Products WHERE category_id = %s")
+    cursor.execute(query2,results)
+    result = cursor.fetchall()
+    product_name = result[0][1]
+    stock = result[0][2]
+    time = result[0][8]
+    create_category_window(category, product_name, stock, time)
+
+def add_inventory():
+    #adds one to product inventory
+    pass
+
+def subtract_inventory():
+    #subtracts one from inventory
+    pass
 
 #Creates pop-up window for given product
-def create_product_window(name1):
+def create_product_window(name1, inventory1, source1, link1, lead_time1,cost1):
     window = tk.Toplevel(root)
     window.geometry("300x300")
     product_name = Label(window, text = name1, font = ("Times", 24))
     product_name.pack()
 
-    inventory_level = Label(window, text = "Inventory Level - ", font = ("Times", 12))
+    inventory_level = Label(window, text = "Inventory Level - " + str(inventory1), font = ("Times", 12))
     button_frame = Frame(window)
     button_frame.pack()
-    button1 = Button(button_frame, text="SUBTRACT 1 FROM INVENTORY")
+    button1 = Button(button_frame, text="SUBTRACT 1 FROM INVENTORY", command= subtract_inventory)
     button1.grid(row=0, column=0)
 
-    button2 = Button(button_frame, text="ADD 1 TO INVENTORY")
+    button2 = Button(button_frame, text="ADD 1 TO INVENTORY", command= add_inventory)
     button2.grid(row=0, column=1)
-    source = Label(window, text = "Source - ", font = ("Times", 12))
-    link = Label(window, text="Link - ", font = ("Times", 12))
-    lead_time = Label(window, text="Lead Time - ", font = ("Times", 12))
-    cost = Label(window, text="Cost - ", font = ("Times", 12))
+    source = Label(window, text = "Source - " + source1, font = ("Times", 12))
+    link = Label(window, text="Link - " + link1, font = ("Times", 12))
+    lead_time = Label(window, text="Lead Time - " + lead_time1, font = ("Times", 12))
+    cost = Label(window, text="Cost - " + cost1, font = ("Times", 12))
     inventory_level.pack()
     source.pack()
     link.pack()
@@ -69,14 +91,14 @@ def create_product_window(name1):
         window.destroy()
     Button(window, text = "Exit",  command = close).pack()
 
-def create_category_window(category1):
+def create_category_window(category1, name1, stock1, time1):
     window = tk.Toplevel(root)
     window.geometry("500x300")
     product_name = Label(window, text = category1, font = ("Times", 24))
     product_name.pack()
     info = Label(window, text = "Product              Stock              Last update date/time", font = ("Times", 12))
     info.pack()
-    products = Label(window, text = "Apples              10              3/8/23 4:00pm", font = ("Times", 12))
+    products = Label(window, text =name1+"             "+ str(stock1) +"             "+  time1, font = ("Times", 12))
     products.pack()
     def close():
         window.destroy()
