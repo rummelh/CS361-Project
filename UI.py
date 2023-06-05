@@ -57,11 +57,29 @@ def get_category_info():
 
 def add_inventory():
     #adds one to product inventory
-    pass
+    product = clicked.get()
+    query = ("SELECT inventory_level FROM Products WHERE product_name = %s")
+    cursor.execute(query,(product,))
+    result = cursor.fetchall()
+    add = result[0][0]
+    add +=1
+    update_query = ("UPDATE Products SET inventory_level = %s")
+    cursor.execute(update_query, (add,))
+
+
+
+
 
 def subtract_inventory():
     #subtracts one from inventory
-    pass
+    product = clicked.get()
+    query = ("SELECT inventory_level FROM Products WHERE product_name = %s")
+    cursor.execute(query, (product,))
+    result = cursor.fetchall()
+    sub = result[0][0]
+    sub -= 1
+    update_query = ("UPDATE Products SET inventory_level = %s")
+    cursor.execute(update_query, (sub,))
 
 #Creates pop-up window for given product
 def create_product_window(name1, inventory1, source1, link1, lead_time1,cost1):
@@ -96,9 +114,9 @@ def create_category_window(category1, name1, stock1, time1):
     window.geometry("500x300")
     product_name = Label(window, text = category1, font = ("Times", 24))
     product_name.pack()
-    info = Label(window, text = "Product              Stock              Last update date/time", font = ("Times", 12))
+    info = Label(window, text = "Product              Stock", font = ("Times", 12))
     info.pack()
-    products = Label(window, text =name1+"             "+ str(stock1) +"             "+  time1, font = ("Times", 12))
+    products = Label(window, text =name1+"             "+ str(stock1), font = ("Times", 12))
     products.pack()
     def close():
         window.destroy()
